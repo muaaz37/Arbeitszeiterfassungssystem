@@ -43,4 +43,4 @@ Keine Passwörter, Tokens, privaten Schlüssel, echten Personaldaten oder produk
 
 ## Lizenz
 
-Dieses Repository enthält eine [MIT-Lizenz](LICENSE). Vor Veröffentlichung von Hochschulmaterialien, personenbezogenen Daten oder fremden Ressourcen sind deren Nutzungsrechte und die jeweiligen Hochschulvorgaben zu beachten.
+Dieses Repository enthält eine [MIT-Lizenz](LICENSE).
