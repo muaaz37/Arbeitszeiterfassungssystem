@@ -1,0 +1,32 @@
+name: Fachfunktion / User Story
+description: Neue Funktion mit Anforderungsbezug und Akzeptanzkriterien planen
+title: "feat: "
+labels: []
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Ziel / User Story
+      description: Welche Person benötigt welche Funktion und warum?
+      placeholder: "Als Mitarbeiter möchte ich ..., damit ..."
+    validations:
+      required: true
+  - type: input
+    id: requirements
+    attributes:
+      label: Pflichtenheft-Bezug
+      placeholder: "LF-U-01 / S-U-01-1 ..."
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Akzeptanzkriterien
+      placeholder: |
+        - [ ] ...
+        - [ ] ...
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Technische Hinweise und Abhängigkeiten
+      description: Fachmodule, API, Datenbank, Berechtigungen, Tests
