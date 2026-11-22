@@ -2,7 +2,7 @@
 
 Webanwendung zur Verwaltung von Personal- und Abteilungsdaten, Urlaubsanträgen, Arbeitszeiten, Abwesenheiten, Dienstplänen, Auswertungen und Benachrichtigungen.
 
-> **Projektstatus:** Repository-Grundkonfiguration. Es ist noch keine lauffähige Anwendung enthalten.
+> **Projektstatus:** Repository-Grundkonfiguration und lauffähiges Spring-Boot-Grundgerüst vorhanden. Frontend, Datenbankanbindung und Authentifizierung befinden sich noch in Vorbereitung.
 
 ## Vorgesehene Architektur
 
