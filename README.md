@@ -27,6 +27,46 @@ Die fachlichen Backend-Module sind Benutzer/Rollen, Personal/Abteilungen, Urlaub
 
 Die Verzeichnisse werden erst mit den jeweiligen ersten Implementierungsschritten angelegt.
 
+
+## Lokale Entwicklungsumgebung
+
+Voraussetzung ist Docker mit Docker Compose. Führe die Befehle im Projektverzeichnis aus.
+
+### Infrastruktur starten
+
+1. Kopiere `.env.example` nach `.env`.
+2. Setze in `.env` die lokalen Passwörter:
+  - `POSTGRES_PASSWORD` für die Anwendungsdatenbank
+  - `KC_DB_PASSWORD` für die Keycloak-Datenbank
+  - `KC_BOOTSTRAP_ADMIN_PASSWORD` für die Keycloak Admin Console
+3. Starte die Infrastruktur:
+
+   ```sh
+   docker compose up -d --build
+   ```
+
+Beim ersten Start mit einer frischen Keycloak-Datenbank legt Keycloak das Administratorkonto automatisch an. Öffne die [Admin Console](http://localhost:8081/admin/) und melde dich mit `KC_BOOTSTRAP_ADMIN_USERNAME` (Standard `admin`) und `KC_BOOTSTRAP_ADMIN_PASSWORD` an.
+
+Öffne für den Login-Test die [Kontoseite des Projektrealms](http://localhost:8081/realms/arbeitszeiterfassung/account/) und melde dich als `test-user` an. Das Passwort steht in der Realm-Datei und ist ausschließlich für lokale Tests vorgesehen.
+
+`docker compose down` stoppt die Infrastruktur. Die Daten bleiben in den PostgreSQL-Volumes erhalten.
+
+### Keycloak und Spring Security
+
+| Einstellung | Lokaler Wert |
+| --- | --- |
+| Spring Security `issuer-uri` | `http://localhost:8081/realms/arbeitszeiterfassung` |
+| Öffentliche Angular-Client-ID | `arbeitszeiterfassung` |
+| Anmeldeverfahren | Authorization Code Flow mit PKCE `S256` |
+| Redirect-URI | `http://localhost:4200/` |
+| Web Origin | `http://localhost:4200` |
+
+Sobald die Angular-Callback-Route feststeht, wird ihre vollständige URL als Redirect-URI in Angular und im Keycloak-Realm hinterlegt. Die Web Origin wird aktualisiert, wenn sich das Protokoll, der Host oder der Port des Frontends ändert.
+
+### Administration
+
+`admin` verwaltet Keycloak über die Admin Console. `test-app-admin` ist das lokale Testkonto für die fachliche Administration in der Anwendung. Die fachliche Rolle und den Kontostatus verwaltet später Modul A in der Anwendungsdatenbank.
+
 ## Zusammenarbeit
 
 1. Eine Aufgabe als GitHub Issue erfassen.
