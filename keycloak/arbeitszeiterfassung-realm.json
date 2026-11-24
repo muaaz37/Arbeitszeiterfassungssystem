@@ -1,0 +1,66 @@
+{
+  "realm": "arbeitszeiterfassung",
+  "enabled": true,
+  "displayName": "Arbeitszeiterfassung",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "rememberMe": true,
+  "clients": [
+    {
+      "clientId": "arbeitszeiterfassung",
+      "name": "Arbeitszeiterfassung Angular Client",
+      "description": "Öffentlicher OIDC-Client für das Angular-Frontend",
+      "protocol": "openid-connect",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "redirectUris": [
+        "http://localhost:4200/"
+      ],
+      "webOrigins": [
+        "http://localhost:4200"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      }
+    }
+  ],
+  "users": [
+    {
+      "username": "test-user",
+      "email": "test-user@example.test",
+      "firstName": "Test",
+      "lastName": "Benutzer",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "test123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["default-roles-arbeitszeiterfassung"]
+    },
+    {
+      "username": "test-app-admin",
+      "email": "test-app-admin@example.test",
+      "firstName": "Test",
+      "lastName": "Anwendungsadmin",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["default-roles-arbeitszeiterfassung"]
+    }
+  ]
+}
