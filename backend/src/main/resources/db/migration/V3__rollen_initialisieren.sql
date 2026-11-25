@@ -1,0 +1,6 @@
+INSERT INTO rolle (rolle_id, bezeichnung)
+VALUES
+  ('a2e35980-78ec-4d76-931c-4e69442492aa', 'MITARBEITER'),
+  ('ab9c4c6b-ce60-4a51-91c1-8b4b9d8c8c53', 'VORGESETZTER'),
+  ('4afcf965-286d-4ed7-b719-e3ea1a76d547', 'PERSONALVERWALTUNG'),
+  ('26fbdd47-e37c-425b-9f8a-ce734183c596', 'ADMINISTRATION');
