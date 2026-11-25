@@ -49,4 +49,34 @@ class BackendApplicationTests {
             status { isOk() }
         }
     }
+
+    @Test
+    fun `GET auth me liefert Subject und Benutzername`() {
+        mockMvc.get("/api/v1/auth/me") {
+            with(jwt().jwt { token ->
+                token.subject("konto-1")
+                token.claim("preferred_username", "test-user")
+            })
+        }.andExpect {
+            status { isOk() }
+            jsonPath("$.subject") { value("konto-1") }
+            jsonPath("$.username") { value("test-user") }
+        }
+    }
+
+    @Test
+    fun `GET auth me ohne preferred_username liefert 401`() {
+        mockMvc.get("/api/v1/auth/me") {
+            with(jwt().jwt { token -> token.subject("konto-1") })
+        }.andExpect {
+            status { isUnauthorized() }
+        }
+    }
+
+    @Test
+    fun `GET auth me ohne Zugriffstoken liefert 401`() {
+        mockMvc.get("/api/v1/auth/me").andExpect {
+            status { isUnauthorized() }
+        }
+    }
 }
