@@ -86,7 +86,7 @@ Ein Benutzer kann mehrere Rollen besitzen. Die Berechtigungen ergeben sich aus d
 
 ## Eigene Berechtigungen und Kontostatus
 
-Angular ruft `GET /api/v1/ich/berechtigungen` mit einem Bearer-Zugriffstoken auf. Der Endpunkt nimmt keine Benutzer-ID entgegen. Nach der Tokenprüfung ordnet Modul A das Subject dem Anwendungskonto zu und liest dessen aktuellen Status und Berechtigungen aus PostgreSQL. Jedes aktive Anwendungskonto darf die eigenen Berechtigungen abrufen.
+Angular ruft `GET /api/v1/me/permissions` mit einem Bearer-Zugriffstoken auf. Der Endpunkt nimmt keine Benutzer-ID entgegen. Nach der Tokenprüfung ordnet Modul A das Subject dem Anwendungskonto zu und liest dessen aktuellen Status und Berechtigungen aus PostgreSQL. Jedes aktive Anwendungskonto darf die eigenen Berechtigungen abrufen.
 
 | JSON-Feld bei HTTP 200 | Typ | Bedeutung |
 | --- | --- | --- |
