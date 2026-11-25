@@ -55,7 +55,8 @@ Beim ersten Start mit einer frischen Keycloak-Datenbank legt Keycloak das Admini
 
 | Einstellung | Lokaler Wert |
 | --- | --- |
-| Spring Security `issuer-uri` | `http://localhost:8081/realms/arbeitszeiterfassung` |
+| Spring Security `issuer-uri` (Umgebungsvariable `KEYCLOAK_ISSUER_URI`) | `http://localhost:8081/realms/arbeitszeiterfassung` |
+| Erwartete API-Audience (Umgebungsvariable `KEYCLOAK_AUDIENCE`) | `arbeitszeiterfassung-api` |
 | Öffentliche Angular-Client-ID | `arbeitszeiterfassung` |
 | Anmeldeverfahren | Authorization Code Flow mit PKCE `S256` |
 | Redirect-URI | `http://localhost:4200/` |
