@@ -4,6 +4,7 @@ import com.nimbusds.jose.JWSAlgorithm
 import com.nimbusds.jose.JWSHeader
 import com.nimbusds.jose.crypto.RSASSASigner
 import com.nimbusds.jose.jwk.JWKSet
+import com.nimbusds.jose.jwk.RSAKey
 import com.nimbusds.jose.jwk.gen.RSAKeyGenerator
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
@@ -52,10 +53,16 @@ class AuthMeJwtDecoderTests @Autowired constructor(private val mockMvc: MockMvc)
         }
     }
 
-    private fun signedToken(issuedAt: Instant, expiresAt: Instant): String {
+    private fun signedToken(
+        issuedAt: Instant,
+        expiresAt: Instant,
+        audience: String = "arbeitszeiterfassung-api",
+        tokenIssuer: String = issuer,
+        signingKey: RSAKey = key
+    ): String {
         val claims = JWTClaimsSet.Builder()
-            .issuer(issuer)
-            .audience("arbeitszeiterfassung-api")
+            .issuer(tokenIssuer)
+            .audience(audience)
             .subject("konto-1")
             .claim("preferred_username", "test-user")
             .issueTime(Date.from(issuedAt))
@@ -63,7 +70,7 @@ class AuthMeJwtDecoderTests @Autowired constructor(private val mockMvc: MockMvc)
             .build()
         val header = JWSHeader.Builder(JWSAlgorithm.RS256).keyID(key.keyID).build()
         val token = SignedJWT(header, claims)
-        token.sign(RSASSASigner(key))
+        token.sign(RSASSASigner(signingKey))
         return token.serialize()
     }
 
@@ -86,6 +93,60 @@ class AuthMeJwtDecoderTests @Autowired constructor(private val mockMvc: MockMvc)
         val token = signedToken(now.minusSeconds(600), now.minusSeconds(300))
         mockMvc.get("/api/v1/auth/me") {
             header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+        }.andExpect {
+            status { isUnauthorized() }
+        }
+    }
+
+    @Test
+    fun `Decoder weist ein Token für eine andere API ab`() {
+        val now = Instant.now()
+        val token = signedToken(
+            issuedAt = now.minusSeconds(600),
+            expiresAt = now.plusSeconds(300),
+            audience = "andere-api"
+        )
+        mockMvc.get("/api/v1/auth/me") {
+            header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+        }.andExpect {
+            status { isUnauthorized() }
+        }
+    }
+
+    @Test
+    fun `Decoder weist ein Token mit abweichendem Aussteller ab`() {
+        val now = Instant.now()
+        val token = signedToken(
+            issuedAt = now.minusSeconds(600),
+            expiresAt = now.plusSeconds(300),
+            tokenIssuer = "$issuer/anderer-realm"
+        )
+        mockMvc.get("/api/v1/auth/me") {
+            header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+        }.andExpect {
+            status { isUnauthorized() }
+        }
+    }
+
+    @Test
+    fun `Decoder weist ein Token mit ungültiger Signatur ab`() {
+        val now = Instant.now()
+        val token = signedToken(
+            issuedAt = now.minusSeconds(600),
+            expiresAt = now.plusSeconds(300),
+            signingKey = RSAKeyGenerator(2048).generate()
+        )
+        mockMvc.get("/api/v1/auth/me") {
+            header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+        }.andExpect {
+            status { isUnauthorized() }
+        }
+    }
+
+    @Test
+    fun `Decoder weist ein unlesbares Zugriffstoken ab`() {
+        mockMvc.get("/api/v1/auth/me") {
+            header(HttpHeaders.AUTHORIZATION, "Bearer kein-jwt")
         }.andExpect {
             status { isUnauthorized() }
         }
