@@ -4,7 +4,9 @@ Entwurf für Issue #6 zur gemeinsamen Prüfung.
 
 ## Lokale Dienstadressen
 
-Diese Adressen gelten auf dem Entwicklungsrechner, wenn Angular und Spring Boot lokal laufen und Docker Compose Keycloak und PostgreSQL bereitstellt.
+Die Tabelle nennt die Adressen für die lokale Entwicklung mit Angular-Entwicklungsserver und Spring Boot auf dem Entwicklungsrechner. Die aktuelle Compose-Datei startet Keycloak und die beiden PostgreSQL-Datenbanken.
+
+Für den Serverbetrieb gibt das Pflichtenheft (AT-W-03-2, S. 61) die Bereitstellung der gesamten Anwendung mit Docker Compose vor. Der Browser erreicht Frontend, API und die öffentlichen Keycloak-Endpunkte über den HTTPS-Reverse-Proxy. PostgreSQL ist im internen Netz erreichbar (Architekturentwurf, Abschnitt 9.2).
 
 | Dienst | Adresse | Verwendung |
 | --- | --- | --- |
@@ -50,12 +52,12 @@ Angular sendet bei `GET /api/v1/auth/me` das Keycloak-Zugriffstoken als Bearer-T
 
 | JSON-Feld bei HTTP 200 | Claim im Zugriffstoken | Bedeutung |
 | --- | --- | --- |
-| `subject` | `sub` | Stabile Kennung des Kontos beim vereinbarten Aussteller. Modul A verwendet sie zur Zuordnung über `benutzer.keycloak_id`. |
+| `subject` | `sub` | Der Aussteller vergibt diese Kennung einmal pro Konto und verwendet sie auch nach einer Umbenennung weiter. Modul A verwendet sie zur Zuordnung über `benutzer.keycloak_id`. |
 | `username` | `preferred_username` | Aktueller Benutzername für die Anzeige in Angular. Er kann sich ändern. |
 
 Bei fehlendem oder ungültigem Zugriffstoken antwortet das Backend mit HTTP 401. Issue #9 überprüft die vereinbarten Felder mit einem tatsächlich von Keycloak ausgestellten Zugriffstoken.
 
-Die eigentliche Identität ergibt sich aus Aussteller und Subject. Der Benutzername dient der Anzeige. [OpenID Connect Core, Abschnitt 5.7](https://openid.net/specs/openid-connect-core-1_0.html#ClaimStability)
+Aussteller und Subject identifizieren gemeinsam das Konto. Der Benutzername dient der Anzeige. [OpenID Connect Core, Abschnitt 5.7](https://openid.net/specs/openid-connect-core-1_0.html#ClaimStability)
 
 ## Zuordnung von Identität, Benutzerkonto und Mitarbeiter
 
@@ -71,7 +73,7 @@ Grundlage sind das Datenmodell und die Integritätsbedingungen in Kapitel 7 des 
 
 ## Fachliche Anwendungsrollen
 
-Modul A verwaltet die Rollenzuordnungen in PostgreSQL. Für die vier vordefinierten Rollen verwenden Backend und API die folgenden stabilen Bezeichner. Angular kann die fachlichen Namen als Beschriftung anzeigen.
+Modul A verwaltet die Rollenzuordnungen in PostgreSQL. Für die vier vordefinierten Rollen verwenden Backend und API die Bezeichner aus der Tabelle. Angular kann die fachlichen Namen als Beschriftung anzeigen.
 
 | Fachlicher Name | Technischer Bezeichner | Zuständigkeit gemäß Architekturentwurf |
 | --- | --- | --- |
