@@ -24,6 +24,18 @@
       "webOrigins": [
         "http://localhost:4200"
       ],
+      "protocolMappers": [
+        {
+          "name": "Backend-Audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "arbeitszeiterfassung-api",
+            "access.token.claim": "true",
+            "id.token.claim": "false"
+          }
+        }
+      ],
       "attributes": {
         "pkce.code.challenge.method": "S256"
       }

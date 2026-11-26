@@ -62,6 +62,8 @@ Beim ersten Start mit einer frischen Keycloak-Datenbank legt Keycloak das Admini
 | Redirect-URI | `http://localhost:4200/` |
 | Web Origin | `http://localhost:4200` |
 
+Der Realm-Import setzt für Zugriffstoken des Angular-Clients die Audience `arbeitszeiterfassung-api`. Bestehende Realms werden beim Start übersprungen. Für eine bereits eingerichtete lokale Umgebung im dedizierten Client Scope des Clients `arbeitszeiterfassung` einen Mapper vom Typ `Audience` mit der Custom Audience `arbeitszeiterfassung-api` anlegen und die Ausgabe im Access Token aktivieren. Danach ein neues Zugriffstoken beziehen.
+
 Sobald die Angular-Callback-Route feststeht, wird ihre vollständige URL als Redirect-URI in Angular und im Keycloak-Realm hinterlegt. Die Web Origin wird aktualisiert, wenn sich das Protokoll, der Host oder der Port des Frontends ändert.
 
 ### Administration
