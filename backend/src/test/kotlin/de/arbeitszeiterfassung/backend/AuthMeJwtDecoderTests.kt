@@ -12,6 +12,7 @@ import com.sun.net.httpserver.HttpServer
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Import
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
 import org.springframework.http.HttpHeaders
@@ -25,6 +26,7 @@ import java.util.Date
 
 @SpringBootTest(properties = ["KEYCLOAK_AUDIENCE=arbeitszeiterfassung-api"])
 @AutoConfigureMockMvc
+@Import(PostgreSqlTestConfiguration::class)
 class AuthMeJwtDecoderTests @Autowired constructor(private val mockMvc: MockMvc) {
     companion object {
         private val key = RSAKeyGenerator(2048).keyID("test-key").generate()
