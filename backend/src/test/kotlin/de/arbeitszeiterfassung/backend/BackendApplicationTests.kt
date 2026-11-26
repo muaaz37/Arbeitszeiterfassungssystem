@@ -13,7 +13,10 @@ import org.springframework.web.bind.annotation.RestController
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import(BackendApplicationTests.TestEndpoint::class)
+@Import(
+    BackendApplicationTests.TestEndpoint::class,
+    PostgreSqlTestConfiguration::class
+)
 class BackendApplicationTests {
     @RestController
     class TestEndpoint {
