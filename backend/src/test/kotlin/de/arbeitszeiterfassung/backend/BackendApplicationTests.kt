@@ -1,5 +1,6 @@
 package de.arbeitszeiterfassung.backend
 
+import de.arbeitszeiterfassung.backend.benutzer.domain.BenutzerRepository
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -27,6 +28,9 @@ class BackendApplicationTests {
     @Autowired
     lateinit var mockMvc: MockMvc
 
+    @Autowired
+    lateinit var benutzerRepository: BenutzerRepository
+
     @Test
     fun contextLoads() {
     }
@@ -40,7 +44,8 @@ class BackendApplicationTests {
 
     @Test
     fun `GET mit authentifizierter Testidentitaet erreicht den Testendpunkt`() {
-        mockMvc.get("/api/test") { with(jwt()) }.andExpect {
+        val konto = benutzerRepository.speichereAktivesTestkonto()
+        mockMvc.get("/api/test") { with(jwt().jwt { it.subject(konto.keycloakId) }) }.andExpect {
             status { isOk() }
             content { string("OK") }
         }
@@ -55,22 +60,36 @@ class BackendApplicationTests {
 
     @Test
     fun `GET auth me liefert Subject und Benutzername`() {
+        val konto = benutzerRepository.speichereAktivesTestkonto()
         mockMvc.get("/api/v1/auth/me") {
             with(jwt().jwt { token ->
-                token.subject("konto-1")
+                token.subject(konto.keycloakId)
                 token.claim("preferred_username", "test-user")
             })
         }.andExpect {
             status { isOk() }
-            jsonPath("$.subject") { value("konto-1") }
+            jsonPath("$.subject") { value(konto.keycloakId) }
             jsonPath("$.username") { value("test-user") }
         }
     }
 
     @Test
-    fun `GET auth me ohne preferred_username liefert 401`() {
+    fun `GET auth me ohne Anwendungskonto liefert 403`() {
         mockMvc.get("/api/v1/auth/me") {
-            with(jwt().jwt { token -> token.subject("konto-1") })
+            with(jwt().jwt { token ->
+                token.subject("keycloak-id-ohne-anwendungskonto")
+                token.claim("preferred_username", "test-user")
+            })
+        }.andExpect {
+            status { isForbidden() }
+        }
+    }
+
+    @Test
+    fun `GET auth me ohne preferred_username liefert 401`() {
+        val konto = benutzerRepository.speichereAktivesTestkonto()
+        mockMvc.get("/api/v1/auth/me") {
+            with(jwt().jwt { token -> token.subject(konto.keycloakId) })
         }.andExpect {
             status { isUnauthorized() }
         }
