@@ -2,7 +2,7 @@
 
 Webanwendung zur Verwaltung von Personal- und Abteilungsdaten, Urlaubsanträgen, Arbeitszeiten, Abwesenheiten, Dienstplänen, Auswertungen und Benachrichtigungen.
 
-> **Projektstatus:** Repository-Grundkonfiguration und lauffähiges Spring-Boot-Grundgerüst vorhanden. Frontend, Datenbankanbindung und Authentifizierung befinden sich noch in Vorbereitung.
+> **Projektstatus:** Angular-Grundgerüst mit Keycloak-Login, JWT-geschützte Spring-Boot-API sowie Benutzer- und Rollenpersistenz in PostgreSQL mit Flyway-Migrationen sind vorhanden. Die fachliche Kontostatus- und Berechtigungsprüfung sowie die administrative Benutzerverwaltung sind noch offen.
 
 ## Vorgesehene Architektur
 
@@ -15,17 +15,17 @@ Webanwendung zur Verwaltung von Personal- und Abteilungsdaten, Urlaubsanträgen,
 
 Die fachlichen Backend-Module sind Benutzer/Rollen, Personal/Abteilungen, Urlaub, Zeit/Pausen, Abwesenheiten, Dienstplanung, Audit, Auswertungen und Benachrichtigungen. Die Datenverantwortung bleibt je Fachmodul getrennt.
 
-## Geplante Projektstruktur
+## Projektstruktur
 
 | Verzeichnis | Inhalt |
 | --- | --- |
 | frontend/ | Angular-Anwendung |
 | backend/ | Kotlin-/Spring-Boot-Anwendung |
-| infra/ | Docker Compose, Deployment und Beispielkonfiguration |
+| infra/ (geplant) | Künftige Bündelung der Infrastruktur- und Deployment-Dateien |
 | docs/ | Architektur, API- und Projektdokumentation |
 | .github/ | Pull-Request-Vorlage, Issue-Vorlagen und später CI |
 
-Die Verzeichnisse werden erst mit den jeweiligen ersten Implementierungsschritten angelegt.
+Docker Compose und die Beispielkonfiguration liegen derzeit als `docker-compose.yml` und `.env.example` im Projektverzeichnis. Die Keycloak-Konfiguration liegt unter `keycloak/`. Ein separates `infra/`-Verzeichnis ist vorgesehen.
 
 
 ## Lokale Entwicklungsumgebung
@@ -72,7 +72,15 @@ Sobald die Angular-Callback-Route feststeht, wird ihre vollständige URL als Red
 
 ### Frontend lokal starten
 
-Voraussetzungen sind Docker Compose, Java 21, Node.js und npm.
+Voraussetzungen sind Docker Compose, Java 21 und die folgenden Frontend-Werkzeuge:
+
+| Werkzeug | Version / unterstützter Bereich |
+| --- | --- |
+| Angular | 21.2.x; aktuell 21.2.26 im Lockfile, CLI und Build-Werkzeuge 21.2.31 |
+| Node.js | 24.x (`>=24.0.0 <25.0.0`); lokal mit 24.13.1 geprüft |
+| npm | 11.x; `packageManager` legt 11.11.0 fest, lokal zusätzlich mit 11.8.0 geprüft |
+
+Der dokumentierte Node.js-Bereich erfüllt die Versionsanforderungen der eingecheckten Angular- und Testabhängigkeiten. Die konkreten Paketstände sind in `frontend/package-lock.json` versioniert; `npm ci` installiert diese Stände. Nach Aktualisierungen des Lockfiles müssen die Versionsanforderungen erneut geprüft werden.
 
 Richte die lokale `.env` wie im Abschnitt „Infrastruktur starten“ beschrieben ein.
 Starte Keycloak und die Anwendungsdatenbank im Projektverzeichnis:
