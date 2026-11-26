@@ -70,6 +70,54 @@ Sobald die Angular-Callback-Route feststeht, wird ihre vollständige URL als Red
 
 `admin` verwaltet Keycloak über die Admin Console. `test-app-admin` ist das lokale Testkonto für die fachliche Administration in der Anwendung. Die fachliche Rolle und den Kontostatus verwaltet später Modul A in der Anwendungsdatenbank.
 
+### Frontend lokal starten
+
+Voraussetzungen sind Docker Compose, Java 21, Node.js und npm.
+
+Richte die lokale `.env` wie im Abschnitt „Infrastruktur starten“ beschrieben ein.
+Starte Keycloak im Projektverzeichnis:
+
+```bash
+docker compose up -d keycloak
+```
+
+Starte das Backend in einem zweiten Terminal im Projektverzeichnis:
+
+```bash
+cd backend
+./gradlew bootRun
+```
+
+Starte Angular in einem weiteren Terminal im Projektverzeichnis:
+
+```bash
+cd frontend
+npm ci
+npm start
+```
+
+Öffne [das Dashboard](http://localhost:4200/dashboard). Ohne Anmeldung leitet Angular zu Keycloak weiter. Nach erfolgreicher Anmeldung zeigt das Dashboard die Benutzerkennung an.
+
+| Einstellung | Lokaler Wert | Bedeutung |
+| --- | --- | --- |
+| Angular | `http://localhost:4200` | Adresse des Frontends im Browser. |
+| Keycloak-URL | `http://localhost:8081` | Basisadresse des Keycloak-Servers, der die Anmeldung durchführt. |
+| Realm und Public Client-ID | jeweils `arbeitszeiterfassung` | Der Realm enthält die Benutzer und Anmeldeeinstellungen. Die Client-ID identifiziert das Angular-Frontend bei Keycloak. |
+| Login-Rücksprungadresse | `http://localhost:4200/` | Adresse, zu der Keycloak den Browser nach erfolgreicher Anmeldung zurückleitet. |
+| Anmeldeverfahren | Authorization Code Flow mit PKCE `S256` | Angular tauscht den Autorisierungscode gegen ein Zugriffstoken. PKCE bindet den Code an den Client, der die Anmeldung gestartet hat. |
+| Erwartete Backend-Audience | `arbeitszeiterfassung-api` | Wert, den das Backend im `aud`-Claim des Zugriffstokens erwartet. |
+| Lokaler API-Proxy | `/api/**` → `http://localhost:8080` | Der Angular-Entwicklungsserver leitet API-Anfragen an das lokale Spring-Boot-Backend weiter. |
+
+Melde dich für die Integrationsprüfung als `test-user` an und prüfe im Netzwerk-Tab des Browsers, ob `GET /api/v1/auth/me` den Status `200 OK` liefert. Die Antwort enthält `username: "test-user"` und die Keycloak-Benutzer-ID als `subject`.
+
+Führe Tests und Build im Verzeichnis `frontend/` aus:
+
+```bash
+npm test -- --watch=false
+npm run build
+```
+
+
 ## Zusammenarbeit
 
 1. Eine Aufgabe als GitHub Issue erfassen.
