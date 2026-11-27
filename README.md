@@ -189,6 +189,20 @@ Vor dieser Migration müssen alle vorhandenen Mitarbeiter-IDs auf existierende M
 
 Die UUIDs in den Persistenztests dienen als Testdaten für diese Zuordnung. Die vollständige referenzielle Integrität wird mit der beschriebenen späteren Migration hergestellt.
 
+### Keycloak-Identity-Adapter
+
+Der Adapter legt Benutzeridentitäten im Keycloak-Realm `arbeitszeiterfassung` an. Das Backend verwendet dafür den vertraulichen OpenID-Connect-Client `arbeitszeiterfassung-identity` mit aktiviertem Service Account und dem Client Credentials Flow.
+Der Service Account erhält im Realm die Admin-Berechtigung Users → manage. Dem Client wird kc-admin-api als Default Client Scope zugewiesen.
+
+| Umgebungsvariable | Lokaler Standardwert | Bedeutung |
+| --- | --- | --- |
+| `KEYCLOAK_IDENTITY_BASE_URL` | `http://localhost:8081` | Basisadresse von Keycloak |
+| `KEYCLOAK_IDENTITY_REALM` | `arbeitszeiterfassung` | Realm für die Benutzeranlage |
+| `KEYCLOAK_IDENTITY_CLIENT_ID` | `arbeitszeiterfassung-identity` | ID des technischen Clients |
+| `KEYCLOAK_IDENTITY_CLIENT_SECRET` | keiner | Client-Secret, erforderlich für die Benutzeranlage |
+
+Das Client-Secret wird dem Backend als lokale Umgebungsvariable übergeben, zum Beispiel über die IntelliJ-Startkonfiguration.
+
 ### Automatisierte Tests
 
 Voraussetzung ist eine laufende Docker-Umgebung. Im Verzeichnis `backend` führt dieser Befehl Build und Tests aus.
