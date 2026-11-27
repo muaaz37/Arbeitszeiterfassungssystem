@@ -1,1 +1,11 @@
-<h1>Angemeldet als {{ username }}</h1>
+@if (problem(); as error) {
+  <p role="alert">{{ error.message }}</p>
+
+  @if (error.showLogin) {
+    <button type="button" (click)="login()">Erneut anmelden</button>
+  }
+} @else if (username(); as name) {
+  <h1>Angemeldet als {{ name }}</h1>
+} @else {
+  <p role="status">Benutzeridentität wird geladen …</p>
+}
