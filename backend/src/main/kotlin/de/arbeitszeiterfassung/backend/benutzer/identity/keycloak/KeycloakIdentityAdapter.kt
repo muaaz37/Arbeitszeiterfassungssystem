@@ -7,6 +7,8 @@ import de.arbeitszeiterfassung.backend.benutzer.domain.Identitaetskonflikt
 import de.arbeitszeiterfassung.backend.benutzer.domain.IdentityProvider
 import de.arbeitszeiterfassung.backend.benutzer.domain.IdentityProviderFehler
 import de.arbeitszeiterfassung.backend.benutzer.domain.TechnischerZugriffAbgelehnt
+import de.arbeitszeiterfassung.backend.benutzer.domain.IdentitaetNichtGefunden
+import de.arbeitszeiterfassung.backend.benutzer.domain.Identitaetszustand
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -109,6 +111,7 @@ class KeycloakIdentityAdapter(
     }
 
     private fun <T> keycloakAufruf(
+        identitaetsbezogen: Boolean = false,
         beiKonflikt: (RestClientResponseException) -> IdentityProviderFehler = {
             IdentityProviderFehler("Keycloak hat einen Konflikt gemeldet.")
         },
@@ -121,6 +124,11 @@ class KeycloakIdentityAdapter(
         } catch (fehler: RestClientResponseException) {
             throw when (fehler.statusCode.value()) {
                 401, 403 -> TechnischerZugriffAbgelehnt()
+                404 -> if (identitaetsbezogen) {
+                    IdentitaetNichtGefunden()
+                } else {
+                    IdentityProviderFehler("Der angefragte Keycloak-Endpunkt wurde nicht gefunden.")
+                }
                 409 -> beiKonflikt(fehler)
                 else -> IdentityProviderFehler(
                     "Keycloak hat die Anfrage mit HTTP ${fehler.statusCode.value()} abgelehnt."
@@ -132,14 +140,78 @@ class KeycloakIdentityAdapter(
     }
 
     override fun aendereEmail(keycloakId: String, email: String) {
-        throw UnsupportedOperationException("Die E-Mail-Änderung folgt in einem späteren Arbeitspaket.")
+        aktualisiereIdentitaet(keycloakId, mapOf("email" to email))
     }
 
     override fun aktiviereIdentitaet(keycloakId: String) {
-        throw UnsupportedOperationException("Die Aktivierung folgt in einem späteren Arbeitspaket.")
+        aktualisiereIdentitaet(keycloakId, mapOf("enabled" to true))
     }
 
     override fun deaktiviereIdentitaet(keycloakId: String) {
-        throw UnsupportedOperationException("Die Deaktivierung folgt in einem späteren Arbeitspaket.")
+        aktualisiereIdentitaet(keycloakId, mapOf("enabled" to false))
     }
+
+    override fun leseIdentitaetszustand(keycloakId: String): Identitaetszustand {
+        val token = holeZugriffstoken()
+
+        val antwort = keycloakAufruf(identitaetsbezogen = true) {
+            restClient.get()
+                .uri("/admin/realms/{realm}/users/{keycloakId}", realm, keycloakId)
+                .headers { it.setBearerAuth(token) }
+                .retrieve()
+                .toEntity(Map::class.java)
+        }
+
+        val daten = antwort.body
+        val id = daten?.get("id") as? String
+        val aktiv = daten?.get("enabled") as? Boolean
+
+        if (antwort.statusCode != HttpStatus.OK || id != keycloakId || aktiv == null) {
+            throw IdentityProviderFehler("Keycloak hat keinen gültigen Identitätszustand zurückgegeben.")
+        }
+
+        return Identitaetszustand(
+            keycloakId = keycloakId,
+            email = daten?.get("email") as? String,
+            aktiv = aktiv,
+        )
+    }
+
+    override fun loescheIdentitaet(keycloakId: String) {
+        val token = holeZugriffstoken()
+
+        val antwort = keycloakAufruf(identitaetsbezogen = true) {
+            restClient.delete()
+                .uri("/admin/realms/{realm}/users/{keycloakId}", realm, keycloakId)
+                .headers { it.setBearerAuth(token) }
+                .retrieve()
+                .toBodilessEntity()
+        }
+
+        if (antwort.statusCode != HttpStatus.NO_CONTENT) {
+            throw IdentityProviderFehler("Keycloak hat das Löschen der Identität nicht bestätigt.")
+        }
+    }
+
+    private fun aktualisiereIdentitaet(keycloakId: String, aenderungen: Map<String, Any>) {
+        val token = holeZugriffstoken()
+
+        val antwort = keycloakAufruf(
+            identitaetsbezogen = true,
+            beiKonflikt = ::benutzerkonflikt,
+        ) {
+            restClient.put()
+                .uri("/admin/realms/{realm}/users/{keycloakId}", realm, keycloakId)
+                .headers { it.setBearerAuth(token) }
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(aenderungen)
+                .retrieve()
+                .toBodilessEntity()
+        }
+
+        if (antwort.statusCode != HttpStatus.NO_CONTENT) {
+            throw IdentityProviderFehler("Keycloak hat die Änderung der Identität nicht bestätigt.")
+        }
+    }
+
 }

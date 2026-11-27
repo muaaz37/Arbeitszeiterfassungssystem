@@ -16,3 +16,6 @@ class TechnischerZugriffAbgelehnt :
 
 class IdentitaetsanbieterNichtErreichbar :
     IdentityProviderFehler("Der Identitätsanbieter ist nicht erreichbar.")
+
+class IdentitaetNichtGefunden :
+    IdentityProviderFehler("Die Identität wurde nicht gefunden.")

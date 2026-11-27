@@ -9,4 +9,8 @@ interface IdentityProvider {
     fun aktiviereIdentitaet(keycloakId: String)
 
     fun deaktiviereIdentitaet(keycloakId: String)
+
+    fun leseIdentitaetszustand(keycloakId: String): Identitaetszustand
+
+    fun loescheIdentitaet(keycloakId: String)
 }
