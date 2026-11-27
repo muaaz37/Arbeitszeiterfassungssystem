@@ -1,6 +1,8 @@
 package de.arbeitszeiterfassung.backend
 
 import de.arbeitszeiterfassung.backend.benutzer.domain.BenutzerRepository
+import de.arbeitszeiterfassung.backend.benutzer.domain.RollenRepository
+import org.hamcrest.Matchers.containsInAnyOrder
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -30,6 +32,39 @@ class BackendApplicationTests {
 
     @Autowired
     lateinit var benutzerRepository: BenutzerRepository
+
+    @Autowired
+    lateinit var rollenRepository: RollenRepository
+
+    @Test
+    fun `Eigene Berechtigungen folgen dem aktiven Konto aus dem Token`() {
+        val konto = benutzerRepository.speichereAktivesTestkonto()
+        val admin = rollenRepository.findeAlle().single { it.bezeichnung == "ADMINISTRATION" }
+        benutzerRepository.speichere(konto.copy(rollen = setOf(admin)))
+        val identitaet = jwt().jwt { it.subject(konto.keycloakId) }
+
+        mockMvc.get("/api/v1/me/permissions") { with(identitaet) }.andExpect {
+            status { isOk() }
+            jsonPath("$.aktiv") { value(true) }
+            jsonPath("$.berechtigungen") {
+                value(containsInAnyOrder("benutzer.verwalten", "rollen.zuweisen_entziehen", "audit.lesen"))
+            }
+        }
+
+        benutzerRepository.speichere(konto.copy(aktiv = false, rollen = setOf(admin)))
+        mockMvc.get("/api/v1/me/permissions") { with(identitaet) }.andExpect {
+            status { isForbidden() }
+        }
+    }
+
+    @Test
+    fun `Berechtigungsabruf ohne Konto oder ohne Token wird abgewiesen`() {
+        mockMvc.get("/api/v1/me/permissions") {
+            with(jwt().jwt { it.subject("unbekanntes-subject") })
+        }.andExpect { status { isForbidden() } }
+
+        mockMvc.get("/api/v1/me/permissions").andExpect { status { isUnauthorized() } }
+    }
 
     @Test
     fun contextLoads() {

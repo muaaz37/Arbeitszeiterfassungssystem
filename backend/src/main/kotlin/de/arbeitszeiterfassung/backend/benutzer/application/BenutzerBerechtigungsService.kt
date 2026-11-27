@@ -1,5 +1,6 @@
 package de.arbeitszeiterfassung.backend.benutzer.application
 
+import de.arbeitszeiterfassung.backend.benutzer.domain.Benutzer
 import de.arbeitszeiterfassung.backend.benutzer.domain.BenutzerBerechtigungsAuskunft
 import de.arbeitszeiterfassung.backend.benutzer.domain.BenutzerRepository
 import org.springframework.stereotype.Service
@@ -12,14 +13,16 @@ class BenutzerBerechtigungsService(
     override fun istAktiv(benutzerId: UUID): Boolean =
         benutzerRepository.findeNachId(benutzerId)?.aktiv == true
 
-    override fun ermittleBerechtigungen(benutzerId: UUID): Set<String> {
-        val benutzer = benutzerRepository.findeNachId(benutzerId) ?: return emptySet()
-        if (!benutzer.aktiv) return emptySet()
+    override fun ermittleBerechtigungen(benutzerId: UUID): Set<String> =
+        benutzerRepository.findeNachId(benutzerId)?.takeIf { it.aktiv }?.let(::rechteAusRollen).orEmpty()
 
-        return benutzer.rollen.flatMapTo(mutableSetOf()) { rolle ->
+    fun berechtigungenFuerAktivesSubject(subject: String): Set<String>? =
+        benutzerRepository.findeNachKeycloakId(subject)?.takeIf { it.aktiv }?.let(::rechteAusRollen)
+
+    private fun rechteAusRollen(benutzer: Benutzer): Set<String> =
+        benutzer.rollen.flatMapTo(mutableSetOf()) { rolle ->
             berechtigungenProRolle[rolle.bezeichnung].orEmpty()
         }
-    }
 
     private companion object {
         val berechtigungenProRolle = mapOf(
