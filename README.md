@@ -120,6 +120,11 @@ npm start
 
 Melde dich für die Integrationsprüfung als `test-user` an und prüfe im Netzwerk-Tab des Browsers, ob `GET /api/v1/auth/me` den Status `200 OK` liefert. Die Antwort enthält `username: "test-user"` und die Keycloak-Benutzer-ID als `subject`.
 
+Angular verwendet `/api` als zentrale Backend-Adresse. Der HTTP-Interceptor ergänzt das Bearer-Token nur bei Aufrufen der eigenen API. Keycloak prüft vor dem Aufruf die Gültigkeit des Tokens und erneuert es bei Bedarf.
+
+Bei HTTP 401 bietet das Dashboard eine erneute Anmeldung an. Bei HTTP 403 zeigt es eine Meldung zur fehlenden Berechtigung. Bei einem Netzwerkfehler meldet es, dass die Backend-API momentan nicht erreichbar ist. Fehlgeschlagene API-Aufrufe werden nicht automatisch wiederholt.
+
+
 Führe Tests und Build im Verzeichnis `frontend/` aus:
 
 ```bash
