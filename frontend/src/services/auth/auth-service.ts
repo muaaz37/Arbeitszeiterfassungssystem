@@ -1,38 +1,61 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable, InjectionToken } from '@angular/core';
 import Keycloak from 'keycloak-js';
+import { ApiAccessError } from './api-access-error';
 import { authConfig } from './auth-config';
+
+export const KEYCLOAK_CLIENT = new InjectionToken<Keycloak>('Keycloak client', {
+  providedIn: 'root',
+  factory: () => new Keycloak(authConfig),
+});
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly keycloak = new Keycloak(authConfig);
+  private readonly keycloak = inject(KEYCLOAK_CLIENT);
+  private sessionInvalidated = false;
 
   init(): Promise<boolean> {
     return this.keycloak.init({ pkceMethod: 'S256' });
   }
 
   isAuthenticated(): boolean {
-    return !!this.keycloak.token && !this.keycloak.isTokenExpired();
+    return !this.sessionInvalidated && this.keycloak.authenticated === true;
   }
 
-  login(): Promise<void> {
+  login(forceLogin = false): Promise<void> {
     return this.keycloak.login({
       redirectUri: `${window.location.origin}/`,
+      prompt: forceLogin ? 'login' : undefined,
     });
   }
 
-  getUsername(): string {
-    const claims = this.keycloak.tokenParsed;
-    const username = claims?.['preferred_username'];
+  invalidateSession(): void {
+    this.sessionInvalidated = true;
+    void this.keycloak.clearToken().catch(() => undefined);
+  }
 
-    if (typeof username === 'string' && username.length > 0) {
-      return username;
+  async getAccessToken(): Promise<string> {
+    if (!this.isAuthenticated()) {
+      throw new ApiAccessError('session');
     }
 
-    return claims?.sub ?? '';
-  }
+    try {
+      await this.keycloak.updateToken(30);
+      const token = this.keycloak.token;
 
-  getAccessToken(): string | undefined {
-    return this.isAuthenticated() ? this.keycloak.token : undefined;
+      if (!this.sessionInvalidated && token && !this.keycloak.isTokenExpired()) {
+        return token;
+      }
+    } catch {
+      // A failed refresh is handled below.
+    }
+
+    const shouldLogin = !this.sessionInvalidated;
+    this.invalidateSession();
+
+    if (shouldLogin) {
+      void this.login(true).catch(() => undefined);
+    }
+
+    throw new ApiAccessError('session');
   }
 }
-
