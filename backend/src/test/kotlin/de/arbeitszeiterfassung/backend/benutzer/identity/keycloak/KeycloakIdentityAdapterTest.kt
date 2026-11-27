@@ -6,6 +6,10 @@ import de.arbeitszeiterfassung.backend.benutzer.domain.BenutzerkennungBereitsVer
 import de.arbeitszeiterfassung.backend.benutzer.domain.EmailBereitsVergeben
 import de.arbeitszeiterfassung.backend.benutzer.domain.Identitaetskonflikt
 import de.arbeitszeiterfassung.backend.benutzer.domain.TechnischerZugriffAbgelehnt
+import de.arbeitszeiterfassung.backend.benutzer.domain.IdentitaetNichtGefunden
+import de.arbeitszeiterfassung.backend.benutzer.domain.Identitaetszustand
+import de.arbeitszeiterfassung.backend.benutzer.domain.IdentityProviderFehler
+import tools.jackson.databind.json.JsonMapper
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import java.net.InetSocketAddress
@@ -95,6 +99,133 @@ class KeycloakIdentityAdapterTests {
 
         assertFailsWith<TechnischerZugriffAbgelehnt> {
             adapter.legeIdentitaetAn("test-benutzer", "test@example.invalid")
+        }
+    }
+
+    @Test
+    fun `aendert die E-Mail-Adresse der angegebenen Identitaet`() {
+        akzeptiereAenderung(mapOf("email" to "neu@example.invalid"))
+
+        starteAdapter().aendereEmail("test-benutzer-id", "neu@example.invalid")
+    }
+
+    @Test
+    fun `aktiviert die angegebene Identitaet`() {
+        akzeptiereAenderung(mapOf("enabled" to true))
+
+        starteAdapter().aktiviereIdentitaet("test-benutzer-id")
+    }
+
+    @Test
+    fun `deaktiviert die angegebene Identitaet auch bei wiederholtem Aufruf`() {
+        akzeptiereAenderung(mapOf("enabled" to false))
+        val adapter = starteAdapter()
+
+        repeat(2) {
+            adapter.deaktiviereIdentitaet("test-benutzer-id")
+        }
+    }
+
+    @Test
+    fun `meldet eine unbekannte Identitaet`() {
+        akzeptiereTokenabruf()
+        server.createContext("/admin/realms/test-realm/users/unbekannt") { anfrage ->
+            antworte(anfrage, 404)
+        }
+
+        val adapter = starteAdapter()
+
+        assertFailsWith<IdentitaetNichtGefunden> {
+            adapter.aktiviereIdentitaet("unbekannt")
+        }
+    }
+
+    @Test
+    fun `meldet fehlende Berechtigungen bei einer Aenderung`() {
+        akzeptiereTokenabruf()
+        server.createContext("/admin/realms/test-realm/users/test-benutzer-id") { anfrage ->
+            antworte(anfrage, 403)
+        }
+
+        val adapter = starteAdapter()
+
+        assertFailsWith<TechnischerZugriffAbgelehnt> {
+            adapter.deaktiviereIdentitaet("test-benutzer-id")
+        }
+    }
+
+    @Test
+    fun `meldet einen fehlgeschlagenen Keycloak-Aufruf`() {
+        akzeptiereTokenabruf()
+        server.createContext("/admin/realms/test-realm/users/test-benutzer-id") { anfrage ->
+            antworte(anfrage, 500)
+        }
+
+        val adapter = starteAdapter()
+
+        val fehler = assertFailsWith<IdentityProviderFehler> {
+            adapter.aendereEmail("test-benutzer-id", "neu@example.invalid")
+        }
+        assertEquals("Keycloak hat die Anfrage mit HTTP 500 abgelehnt.", fehler.message)
+    }
+
+    @Test
+    fun `liest den aktuellen Zustand der Identitaet`() {
+        akzeptiereTokenabruf()
+        server.createContext("/admin/realms/test-realm/users/test-benutzer-id") { anfrage ->
+            if (anfrage.requestMethod == "GET") {
+                antworte(
+                    anfrage,
+                    200,
+                    """{"id":"test-benutzer-id","email":"test@example.invalid","enabled":false}"""
+                )
+            } else {
+                antworte(anfrage, 405)
+            }
+        }
+
+        val zustand = starteAdapter().leseIdentitaetszustand("test-benutzer-id")
+
+        assertEquals(
+            Identitaetszustand("test-benutzer-id", "test@example.invalid", false),
+            zustand
+        )
+    }
+
+    @Test
+    fun `loescht die Identitaet fuer die Anlagekompensation`() {
+        akzeptiereTokenabruf()
+        server.createContext("/admin/realms/test-realm/users/test-benutzer-id") { anfrage ->
+            val status = if (anfrage.requestMethod == "DELETE") 204 else 405
+            antworte(anfrage, status)
+        }
+
+        starteAdapter().loescheIdentitaet("test-benutzer-id")
+    }
+
+    private fun akzeptiereAenderung(erwarteteAenderungen: Map<String, Any>) {
+        akzeptiereTokenabruf()
+        val jsonMapper = JsonMapper.builder().build()
+        val pfad = "/admin/realms/test-realm/users/test-benutzer-id"
+
+        server.createContext(pfad) { anfrage ->
+            val json = anfrage.requestBody.readAllBytes().toString(Charsets.UTF_8)
+            val aenderungen = runCatching {
+                jsonMapper.readValue(json, Map::class.java)
+            }.getOrNull()
+
+            val status = if (
+                anfrage.requestMethod == "PUT" &&
+                anfrage.requestURI.path == pfad &&
+                anfrage.requestHeaders.getFirst("Authorization") == "Bearer test-token" &&
+                aenderungen == erwarteteAenderungen
+            ) {
+                204
+            } else {
+                400
+            }
+
+            antworte(anfrage, status)
         }
     }
 
