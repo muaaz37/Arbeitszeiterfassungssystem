@@ -191,17 +191,24 @@ Die UUIDs in den Persistenztests dienen als Testdaten für diese Zuordnung. Die 
 
 ### Keycloak-Identity-Adapter
 
-Der Adapter legt Benutzeridentitäten im Keycloak-Realm `arbeitszeiterfassung` an. Das Backend verwendet dafür den vertraulichen OpenID-Connect-Client `arbeitszeiterfassung-identity` mit aktiviertem Service Account und dem Client Credentials Flow.
-Der Service Account erhält im Realm die Admin-Berechtigung Users → manage. Dem Client wird kc-admin-api als Default Client Scope zugewiesen.
+Der Adapter legt Benutzeridentitäten im Keycloak-Realm `arbeitszeiterfassung` an. Er kann ihre E-Mail-Adresse ändern, sie aktivieren oder deaktivieren und ihren aktuellen Zustand anhand der Keycloak-ID abfragen. Wenn die Benutzeranlage fehlschlägt, kann der Adapter das bereits erstellte Keycloak-Konto löschen.
+
+Das Backend verwendet dafür den vertraulichen OpenID-Connect-Client `arbeitszeiterfassung-identity` mit aktiviertem Service Account und dem Client Credentials Flow. Der Service Account erhält im Realm die Admin-Berechtigungen **Users → manage** für die Benutzerverwaltung und **Users → view** für die Zustandsabfrage. Dem Client wird `kc-admin-api` als Default Client Scope zugewiesen.
 
 | Umgebungsvariable | Lokaler Standardwert | Bedeutung |
 | --- | --- | --- |
 | `KEYCLOAK_IDENTITY_BASE_URL` | `http://localhost:8081` | Basisadresse von Keycloak |
-| `KEYCLOAK_IDENTITY_REALM` | `arbeitszeiterfassung` | Realm für die Benutzeranlage |
+| `KEYCLOAK_IDENTITY_REALM` | `arbeitszeiterfassung` | Realm für die Identitätsverwaltung |
 | `KEYCLOAK_IDENTITY_CLIENT_ID` | `arbeitszeiterfassung-identity` | ID des technischen Clients |
-| `KEYCLOAK_IDENTITY_CLIENT_SECRET` | keiner | Client-Secret, erforderlich für die Benutzeranlage |
+| `KEYCLOAK_IDENTITY_CLIENT_SECRET` | keiner | Secret für die Authentifizierung des technischen Clients |
 
 Das Client-Secret wird dem Backend als lokale Umgebungsvariable übergeben, zum Beispiel über die IntelliJ-Startkonfiguration.
+
+#### Persönliche Zugangsdaten einrichten
+
+Neue Identitäten werden aktiv angelegt. Ein Administrator öffnet das Konto in der Keycloak Admin Console unter **Users → Credentials** und setzt ein temporäres Passwort. Bei der ersten Anmeldung fordert Keycloak den Benutzer auf, ein persönliches Passwort zu setzen. Persönliche Zugangsdaten werden ausschließlich in Keycloak verwaltet.
+
+Nach der Deaktivierung verweigert Keycloak neue Anmeldungen. Nach der Reaktivierung kann sich der Benutzer mit seinen vorhandenen Zugangsdaten wieder anmelden. Die Keycloak-ID bleibt bei beiden Vorgängen erhalten.
 
 ### Automatisierte Tests
 
