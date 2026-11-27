@@ -24,8 +24,10 @@ class BenutzerBerechtigungsService(
             berechtigungenProRolle[rolle.bezeichnung].orEmpty()
         }
 
-    private companion object {
-        val berechtigungenProRolle = mapOf(
+    companion object {
+        const val BENUTZER_VERWALTEN = "benutzer.verwalten"
+
+        private val berechtigungenProRolle = mapOf(
             "MITARBEITER" to setOf(
                 "stammdaten.eigene.lesen",
                 "urlaub.eigen.beantragen",
@@ -65,7 +67,7 @@ class BenutzerBerechtigungsService(
                 "kennzahlen.personal.lesen"
             ),
             "ADMINISTRATION" to setOf(
-                "benutzer.verwalten",
+                BENUTZER_VERWALTEN,
                 "rollen.zuweisen_entziehen",
                 "audit.lesen"
             )

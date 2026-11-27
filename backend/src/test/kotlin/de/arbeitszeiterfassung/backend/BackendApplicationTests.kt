@@ -25,6 +25,9 @@ class BackendApplicationTests {
     class TestEndpoint {
         @GetMapping("/api/test")
         fun get() = "OK"
+
+        @GetMapping("/api/v1/benutzer/testzugriff")
+        fun verwaltungszugriff() = "OK"
     }
 
     @Autowired
@@ -64,6 +67,33 @@ class BackendApplicationTests {
         }.andExpect { status { isForbidden() } }
 
         mockMvc.get("/api/v1/me/permissions").andExpect { status { isUnauthorized() } }
+    }
+
+    @Test
+    fun `Benutzerverwaltung prueft die aktuelle Berechtigung bei jedem Aufruf`() {
+        val konto = benutzerRepository.speichereAktivesTestkonto()
+        val rollen = rollenRepository.findeAlle().associateBy { it.bezeichnung }
+        val mitarbeiter = konto.copy(rollen = setOf(rollen.getValue("MITARBEITER")))
+        val admin = konto.copy(rollen = setOf(rollen.getValue("ADMINISTRATION")))
+        val token = jwt().jwt { it.subject(konto.keycloakId) }
+        val pfad = "/api/v1/benutzer/testzugriff"
+
+        mockMvc.get(pfad).andExpect { status { isUnauthorized() } }
+        benutzerRepository.speichere(mitarbeiter)
+        for (url in listOf("/api/v1/benutzer", pfad)) {
+            mockMvc.get(url) { with(token) }.andExpect { status { isForbidden() } }
+        }
+
+        benutzerRepository.speichere(admin)
+        mockMvc.get(pfad) { with(token) }.andExpect {
+            status { isOk() }
+            content { string("OK") }
+        }
+        benutzerRepository.speichere(mitarbeiter)
+        mockMvc.get(pfad) { with(token) }.andExpect { status { isForbidden() } }
+
+        benutzerRepository.speichere(admin.copy(aktiv = false))
+        mockMvc.get(pfad) { with(token) }.andExpect { status { isForbidden() } }
     }
 
     @Test

@@ -95,7 +95,7 @@ Die folgenden Bezeichner bilden die Muss-Funktionen aus den Rollendiagrammen im 
 | `PERSONALVERWALTUNG` | `stammdaten.verwalten`, `abteilung.verwalten`, `arbeitszeitregel.verwalten`, `urlaubsanspruch.verwalten`, `feiertag.verwalten`, `abwesenheit.personal.verwalten`, `arbeitszeit.personal.korrigieren`, `schichtvorlage.verwalten`, `schicht.personal.zuweisen`, `dienstplan.personal.bearbeiten`, `dienstplan.personal.veroeffentlichen`, `urlaub.personal.entscheiden`, `kennzahlen.personal.lesen` |
 | `ADMINISTRATION` | `benutzer.verwalten`, `rollen.zuweisen_entziehen`, `audit.lesen` |
 
-Für die administrative Benutzerverwaltung verwenden Backend und Frontend `benutzer.verwalten`. Nur aktive Konten erhalten Berechtigungen. Jede zugewiesene Rolle trägt ihre eigenen Rechte zur Gesamtmenge bei. Unbekannte Rollen tragen keine Rechte bei.
+Spring Security prüft für `/api/v1/benutzer` und dessen Unterpfade bei jedem Aufruf die Berechtigung `benutzer.verwalten` anhand der aktuellen Rollenzuordnungen in PostgreSQL. Nur aktive Konten erhalten Berechtigungen. Jede zugewiesene Rolle trägt ihre eigenen Rechte zur Gesamtmenge bei. Unbekannte Rollen tragen keine Rechte bei.
 
 ## Eigene Berechtigungen und Kontostatus
 
