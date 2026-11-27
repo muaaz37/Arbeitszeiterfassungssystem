@@ -13,6 +13,11 @@ class JpaBenutzerAdapter(
     private val rolleJpaRepository: SpringDataRolleJpaRepository
 ) : BenutzerRepository {
 
+    override fun existiertKennung(kennung: String) = benutzerJpaRepository.existsByKennung(kennung)
+
+    override fun existiertMitarbeiterzuordnung(mitarbeiterId: UUID) =
+        benutzerJpaRepository.existsByMitarbeiterId(mitarbeiterId)
+
     @Transactional
     override fun speichere(benutzer: Benutzer): Benutzer {
         val rollenIds = benutzer.rollen.map { it.id }.toSet()
@@ -34,6 +39,10 @@ class JpaBenutzerAdapter(
 
         return benutzerJpaRepository.save(entity).toDomain()
     }
+
+    @Transactional(readOnly = true)
+    override fun findeAlle(): List<Benutzer> =
+        benutzerJpaRepository.findAllByOrderByKennungAsc().map { it.toDomain() }
 
     @Transactional(readOnly = true)
     override fun findeNachId(benutzerId: UUID): Benutzer? {
