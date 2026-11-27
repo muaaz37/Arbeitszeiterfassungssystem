@@ -9,6 +9,7 @@ import com.nimbusds.jose.jwk.gen.RSAKeyGenerator
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
 import com.sun.net.httpserver.HttpServer
+import de.arbeitszeiterfassung.backend.benutzer.domain.BenutzerRepository
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -27,7 +28,10 @@ import java.util.Date
 @SpringBootTest(properties = ["KEYCLOAK_AUDIENCE=arbeitszeiterfassung-api"])
 @AutoConfigureMockMvc
 @Import(PostgreSqlTestConfiguration::class)
-class AuthMeJwtDecoderTests @Autowired constructor(private val mockMvc: MockMvc) {
+class AuthMeJwtDecoderTests @Autowired constructor(
+    private val mockMvc: MockMvc,
+    private val benutzerRepository: BenutzerRepository
+) {
     companion object {
         private val key = RSAKeyGenerator(2048).keyID("test-key").generate()
         private val issuerServer = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0).apply {
@@ -58,6 +62,7 @@ class AuthMeJwtDecoderTests @Autowired constructor(private val mockMvc: MockMvc)
     private fun signedToken(
         issuedAt: Instant,
         expiresAt: Instant,
+        subject: String = "konto-1",
         audience: String = "arbeitszeiterfassung-api",
         tokenIssuer: String = issuer,
         signingKey: RSAKey = key
@@ -65,7 +70,7 @@ class AuthMeJwtDecoderTests @Autowired constructor(private val mockMvc: MockMvc)
         val claims = JWTClaimsSet.Builder()
             .issuer(tokenIssuer)
             .audience(audience)
-            .subject("konto-1")
+            .subject(subject)
             .claim("preferred_username", "test-user")
             .issueTime(Date.from(issuedAt))
             .expirationTime(Date.from(expiresAt))
@@ -77,15 +82,23 @@ class AuthMeJwtDecoderTests @Autowired constructor(private val mockMvc: MockMvc)
     }
 
     @Test
-    fun `Decoder akzeptiert ein gültiges signiertes Zugriffstoken`() {
+    fun `Deaktivierung sperrt beim naechsten Aufruf dasselbe gueltige Zugriffstoken`() {
+        val konto = benutzerRepository.speichereAktivesTestkonto()
         val now = Instant.now()
-        val token = signedToken(now.minusSeconds(600), now.plusSeconds(300))
+        val token = signedToken(now.minusSeconds(600), now.plusSeconds(300), subject = konto.keycloakId)
         mockMvc.get("/api/v1/auth/me") {
             header(HttpHeaders.AUTHORIZATION, "Bearer $token")
         }.andExpect {
             status { isOk() }
-            jsonPath("$.subject") { value("konto-1") }
+            jsonPath("$.subject") { value(konto.keycloakId) }
             jsonPath("$.username") { value("test-user") }
+        }
+
+        benutzerRepository.speichere(konto.copy(aktiv = false))
+        mockMvc.get("/api/v1/auth/me") {
+            header(HttpHeaders.AUTHORIZATION, "Bearer $token")
+        }.andExpect {
+            status { isForbidden() }
         }
     }
 
