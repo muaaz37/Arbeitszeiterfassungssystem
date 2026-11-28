@@ -15,6 +15,9 @@ export class Dashboard {
   protected readonly username = signal('');
   protected readonly problem = signal<{ message: string; showLogin: boolean } | null>(null);
 
+  protected readonly abmeldungLaeuft = signal(false);
+  protected readonly abmeldungFehlgeschlagen = signal(false);
+
   constructor() {
     this.authMe.getMe().pipe(takeUntilDestroyed()).subscribe({
       next: (user) => this.username.set(user.username),
@@ -29,6 +32,22 @@ export class Dashboard {
     });
   }
 
+  protected kannAbmelden(): boolean {
+    return this.auth.isAuthenticated();
+  }
+
+  protected async abmelden(): Promise<void> {
+    this.abmeldungLaeuft.set(true);
+    this.abmeldungFehlgeschlagen.set(false);
+
+    try {
+      await this.auth.logout();
+    } catch {
+      this.abmeldungFehlgeschlagen.set(true);
+      this.abmeldungLaeuft.set(false);
+    }
+  }
+
   protected async login(): Promise<void> {
     try {
       await this.auth.login(true);
@@ -38,5 +57,9 @@ export class Dashboard {
         showLogin: true,
       });
     }
+  }
+
+  protected getAccountUrl(): string {
+    return this.auth.getAccountUrl();
   }
 }

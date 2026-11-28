@@ -114,7 +114,11 @@ npm ci
 npm start
 ```
 
-Öffne [das Dashboard](http://localhost:4200/dashboard). Ohne Anmeldung leitet Angular zu Keycloak weiter. Nach erfolgreicher Anmeldung zeigt das Dashboard die Benutzerkennung an.
+Öffne die [Startseite](http://localhost:4200/) und klicke auf **Anmelden**. Nach der Anmeldung bei Keycloak erscheint das Dashboard mit der Benutzerkennung.
+
+Klicke im Dashboard auf **Abmelden**. Keycloak beendet die Sitzung und leitet dich zurück zur Startseite unter `http://localhost:4200/`. Dort wird wieder **Anmelden** angezeigt. 
+Wenn du `/dashboard` danach direkt aufrufst, ist eine erneute Anmeldung erforderlich.
+
 
 | Einstellung | Lokaler Wert | Bedeutung |
 | --- | --- | --- |
@@ -171,6 +175,17 @@ Das Backend wird anschließend im Verzeichnis `backend` gestartet.
 ```
 
 Der Port `5433` wird zum PostgreSQL-Port `5432` im Container weitergeleitet. Der Compose-Dienst `app-db` speichert die Daten im Volume `app-db-data`. Die Variablen zur initialen Datenbankanlage werden beim ersten Start mit einem leeren Volume verwendet.
+
+#### Eigenes Passwort ändern
+
+1. Melde dich an und wähle im Dashboard **Passwort ändern**. Die persönliche Keycloak-Kontoverwaltung öffnet sich in einem neuen Tab.
+2. Wähle **Account Security → Signing in → My Password → Update**.
+3. Gib das neue Passwort ein, bestätige es und speichere die Änderung.
+4. Kehre über **Zurück zur Arbeitszeiterfassung** oder über den ursprünglichen
+   Dashboard-Tab zur Anwendung zurück.
+
+Keycloak prüft und speichert das Passwort. Die Passwortänderung beendet die aktuelle Anmeldung nicht automatisch. Wenn du dich mit dem neuen
+Passwort anmelden möchtest, wähle im Dashboard zuerst **Abmelden**.
 
 ### Versionierte Migrationen
 

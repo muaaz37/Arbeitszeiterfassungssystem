@@ -42,9 +42,11 @@ Der öffentliche Angular-Client verwendet den OpenID Connect Authorization Code 
 
 ## Abmeldung
 
-Die lokale Logout-Rücksprungadresse des Angular-Clients ist `http://localhost:4200/`. Bei der Abmeldung beendet Angular die lokale Anmeldung und veranlasst die Abmeldung bei Keycloak. Nach Ende der Keycloak-Sitzung kehrt der Browser zur vereinbarten Adresse zurück.
+Der Benutzer startet die Abmeldung über **Abmelden** im geschützten Dashboard. Angular veranlasst die OIDC-Abmeldung bei Keycloak und verwendet die lokal gehaltenen Tokens anschließend nicht weiter.
 
-**Abnahmekriterium (AT-B-01-4):** Ruft der Benutzer danach `/dashboard` erneut auf, fordert die Anwendung eine neue Anmeldung an.
+Die vereinbarte lokale Logout-Rücksprungadresse ist `http://localhost:4200/`. Der Keycloak-Client muss diese Adresse für den Logout zulassen. Nach erfolgreicher Abmeldung landet der Benutzer auf der öffentlichen Startseite mit **Anmelden**.
+
+**Abnahmekriterium (AT-B-01-4).** Wird `/dashboard` nach der Abmeldung erneut aufgerufen, fordert die Anwendung eine neue Anmeldung an.
 
 ## Identität des angemeldeten Benutzers
 

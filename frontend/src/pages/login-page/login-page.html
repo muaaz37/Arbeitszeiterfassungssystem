@@ -1,0 +1,6 @@
+<h1>Arbeitszeiterfassung</h1>
+<button type="button" (click)="anmelden()">Anmelden</button>
+
+@if (loginFehlgeschlagen()) {
+  <p role="alert">Die Anmeldung konnte nicht gestartet werden. Bitte versuche es erneut.</p>
+}
