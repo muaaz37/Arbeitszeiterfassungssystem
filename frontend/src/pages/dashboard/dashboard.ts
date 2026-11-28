@@ -58,4 +58,8 @@ export class Dashboard {
       });
     }
   }
+
+  protected getAccountUrl(): string {
+    return this.auth.getAccountUrl();
+  }
 }

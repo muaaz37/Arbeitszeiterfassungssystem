@@ -13,9 +13,14 @@
 @if (abmeldungLaeuft()) {
   <p role="status">Du wirst abgemeldet …</p>
 } @else if (kannAbmelden()) {
+  <a [href]="getAccountUrl()" target="_blank" rel="noopener">
+    Passwort ändern
+  </a>
   <button type="button" (click)="abmelden()">Abmelden</button>
 }
 
 @if (abmeldungFehlgeschlagen()) {
-  <p role="alert">Die Abmeldung konnte nicht gestartet werden. Bitte versuche es erneut.</p>
+  <p role="alert">
+    Die Abmeldung konnte nicht gestartet werden. Bitte versuche es erneut.
+  </p>
 }
