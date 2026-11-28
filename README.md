@@ -68,7 +68,7 @@ Sobald die Angular-Callback-Route feststeht, wird ihre vollständige URL als Red
 
 ### Administration
 
-`admin` verwaltet Keycloak über die Admin Console. `test-app-admin` ist das lokale Testkonto für die fachliche Administration in der Anwendung. Die fachliche Rolle und den Kontostatus verwaltet später Modul A in der Anwendungsdatenbank.
+`admin` verwaltet Keycloak über die Admin Console. `test-app-admin` ist das lokale Testkonto für die fachliche Administration in der Anwendung. Die fachliche Rolle und den Kontostatus verwaltet Modul A in der Anwendungsdatenbank.
 
 ### Frontend lokal starten
 
@@ -97,6 +97,14 @@ Starte das Backend in einem zweiten Terminal im Projektverzeichnis:
 cd backend
 ./gradlew bootRun
 ```
+
+Sobald das Backend die Flyway-Migrationen ausgeführt hat, initialisiere die beiden Konten in der lokalen Compose-Entwicklungsumgebung. Führe dazu im Projektverzeichnis aus:
+
+```bash
+bash scripts/lokale-testkonten.sh
+```
+
+Das Skript liest die tatsächlichen Benutzer-IDs aus dem lokalen Keycloak-Realm. Es setzt die beiden Entwicklungskonten bei jedem Lauf auf aktiv und stellt ihre Testrollen wieder her: `test-app-admin` erhält `ADMINISTRATION`, `test-user` erhält `MITARBEITER`. Die festen Mitarbeiter-UUIDs sind Platzhalter, bis Modul B Mitarbeiterdatensätze bereitstellt. Die Initialisierung erfolgt ausschließlich durch diesen manuellen Aufruf.
 
 Starte Angular in einem weiteren Terminal im Projektverzeichnis:
 

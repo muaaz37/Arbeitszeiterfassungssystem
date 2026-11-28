@@ -84,6 +84,19 @@ Modul A verwaltet die Rollenzuordnungen in PostgreSQL. Für die vier vordefinier
 
 Ein Benutzer kann mehrere Rollen besitzen. Die Berechtigungen ergeben sich aus den aktuell zugewiesenen Rollen. Der zuständige Fachdienst prüft zusätzlich, ob der Zugriff auf den konkreten Mitarbeiter oder die konkrete Abteilung zulässig ist.
 
+### Technische Berechtigungsbezeichner
+
+Die folgenden Bezeichner bilden die Muss-Funktionen aus den Rollendiagrammen im Architekturentwurf (Anhang A) ab. Anmeldung und persönliche Passwortänderung laufen über Keycloak. Die Berechtigungen beschreiben erlaubte Aktionen. Für jede Aktion prüft der zuständige Fachdienst zusätzlich den Zugriff auf das konkrete Objekt.
+
+| Zugewiesene Rolle | Berechtigungen |
+| --- | --- |
+| `MITARBEITER` | `stammdaten.eigene.lesen`, `urlaub.eigen.beantragen`, `urlaub.eigen.lesen`, `urlaub.eigen.stornieren`, `arbeitszeit.eigene.erfassen`, `pause.eigene.erfassen`, `arbeitszeit.eigene.lesen`, `krankmeldung.eigene.erfassen`, `dienstplan.eigen.veroeffentlicht.lesen`, `kennzahlen.eigene.lesen`, `benachrichtigung.eigene.lesen` |
+| `VORGESETZTER` | `urlaub.abteilung.entscheiden`, `stammdaten.abteilung.lesen`, `abwesenheit.abteilung.lesen`, `schicht.abteilung.zuweisen`, `dienstplan.abteilung.bearbeiten`, `dienstplan.abteilung.veroeffentlichen`, `kennzahlen.abteilung.lesen`, `arbeitszeit.abteilung.korrigieren` |
+| `PERSONALVERWALTUNG` | `stammdaten.verwalten`, `abteilung.verwalten`, `arbeitszeitregel.verwalten`, `urlaubsanspruch.verwalten`, `feiertag.verwalten`, `abwesenheit.personal.verwalten`, `arbeitszeit.personal.korrigieren`, `schichtvorlage.verwalten`, `schicht.personal.zuweisen`, `dienstplan.personal.bearbeiten`, `dienstplan.personal.veroeffentlichen`, `urlaub.personal.entscheiden`, `kennzahlen.personal.lesen` |
+| `ADMINISTRATION` | `benutzer.verwalten`, `rollen.zuweisen_entziehen`, `audit.lesen` |
+
+Spring Security prüft für `/api/v1/benutzer` und dessen Unterpfade bei jedem Aufruf die Berechtigung `benutzer.verwalten` anhand der aktuellen Rollenzuordnungen in PostgreSQL. Nur aktive Konten erhalten Berechtigungen. Jede zugewiesene Rolle trägt ihre eigenen Rechte zur Gesamtmenge bei. Unbekannte Rollen tragen keine Rechte bei.
+
 ## Eigene Berechtigungen und Kontostatus
 
 Angular ruft `GET /api/v1/me/permissions` mit einem Bearer-Zugriffstoken auf. Der Endpunkt nimmt keine Benutzer-ID entgegen. Nach der Tokenprüfung ordnet Modul A das Subject dem Anwendungskonto zu und liest dessen aktuellen Status und Berechtigungen aus PostgreSQL. Jedes aktive Anwendungskonto darf die eigenen Berechtigungen abrufen.
