@@ -114,7 +114,11 @@ npm ci
 npm start
 ```
 
-Öffne [das Dashboard](http://localhost:4200/dashboard). Ohne Anmeldung leitet Angular zu Keycloak weiter. Nach erfolgreicher Anmeldung zeigt das Dashboard die Benutzerkennung an.
+Öffne die [Startseite](http://localhost:4200/) und klicke auf **Anmelden**. Nach der Anmeldung bei Keycloak erscheint das Dashboard mit der Benutzerkennung.
+
+Klicke im Dashboard auf **Abmelden**. Keycloak beendet die Sitzung und leitet dich zurück zur Startseite unter `http://localhost:4200/`. Dort wird wieder **Anmelden** angezeigt. 
+Wenn du `/dashboard` danach direkt aufrufst, ist eine erneute Anmeldung erforderlich.
+
 
 | Einstellung | Lokaler Wert | Bedeutung |
 | --- | --- | --- |
