@@ -176,6 +176,17 @@ Das Backend wird anschließend im Verzeichnis `backend` gestartet.
 
 Der Port `5433` wird zum PostgreSQL-Port `5432` im Container weitergeleitet. Der Compose-Dienst `app-db` speichert die Daten im Volume `app-db-data`. Die Variablen zur initialen Datenbankanlage werden beim ersten Start mit einem leeren Volume verwendet.
 
+#### Eigenes Passwort ändern
+
+1. Melde dich an und wähle im Dashboard **Passwort ändern**. Die persönliche Keycloak-Kontoverwaltung öffnet sich in einem neuen Tab.
+2. Wähle **Account Security → Signing in → My Password → Update**.
+3. Gib das neue Passwort ein, bestätige es und speichere die Änderung.
+4. Kehre über **Zurück zur Arbeitszeiterfassung** oder über den ursprünglichen
+   Dashboard-Tab zur Anwendung zurück.
+
+Keycloak prüft und speichert das Passwort. Die Passwortänderung beendet die aktuelle Anmeldung nicht automatisch. Wenn du dich mit dem neuen
+Passwort anmelden möchtest, wähle im Dashboard zuerst **Abmelden**.
+
 ### Versionierte Migrationen
 
 Flyway führt beim Backend-Start die noch ausstehenden SQL-Dateien unter `backend/src/main/resources/db/migration/` aus.
