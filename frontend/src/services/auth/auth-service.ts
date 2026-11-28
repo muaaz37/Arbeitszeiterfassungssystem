@@ -73,4 +73,10 @@ export class AuthService {
 
     throw new ApiAccessError('session');
   }
+
+  getAccountUrl(): string {
+    return this.keycloak.createAccountUrl({
+      redirectUri: `${window.location.origin}/`,
+    });
+  }
 }
