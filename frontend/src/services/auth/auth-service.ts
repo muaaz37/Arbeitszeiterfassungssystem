@@ -28,6 +28,21 @@ export class AuthService {
     });
   }
 
+  async logout(): Promise<void> {
+    this.sessionInvalidated = true;
+
+    try {
+      await this.keycloak.logout({
+        redirectUri: `${window.location.origin}/`,
+      });
+    } catch (error) {
+      this.sessionInvalidated = false;
+      throw error;
+    }
+
+    this.invalidateSession();
+  }
+
   invalidateSession(): void {
     this.sessionInvalidated = true;
     void this.keycloak.clearToken().catch(() => undefined);

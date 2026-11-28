@@ -9,3 +9,13 @@
 } @else {
   <p role="status">Benutzeridentität wird geladen …</p>
 }
+
+@if (abmeldungLaeuft()) {
+  <p role="status">Du wirst abgemeldet …</p>
+} @else if (kannAbmelden()) {
+  <button type="button" (click)="abmelden()">Abmelden</button>
+}
+
+@if (abmeldungFehlgeschlagen()) {
+  <p role="alert">Die Abmeldung konnte nicht gestartet werden. Bitte versuche es erneut.</p>
+}
